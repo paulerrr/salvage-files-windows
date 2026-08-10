@@ -49,4 +49,9 @@ Describe 'Build-PortableExe.ps1 compatibility' {
             '(?s)\[string\]\s+\$OutputPath\s*=.*?\$PSScriptRoot'
         $BuilderContent | Should -Match '\$MyInvocation\.MyCommand\.Path'
     }
+
+    It 'does not request a companion configuration file' {
+        $BuilderContent | Should -Not -Match '(?i)-LongPaths\b'
+        $BuilderContent | Should -Not -Match '(?i)-ConfigFile\b'
+    }
 }

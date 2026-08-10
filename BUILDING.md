@@ -21,7 +21,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\build\Build-PortableE
 
 The one-process execution-policy bypass is needed on Windows computers that block local scripts. It does not permanently change the computer's execution policy.
 
-The result is `dist\Rescue Files.exe`. It is a console executable with an administrator manifest. The build combines the main script and core module in a temporary location, invokes PS2EXE, and removes the temporary combined script afterward.
+The result is the single file `dist\Rescue Files.exe`. It is a console executable with an administrator manifest and does not need a companion configuration file. The build combines the main script and core module in a temporary location, invokes PS2EXE, and removes the temporary combined script afterward.
 
 The executable is not a native rewrite. PS2EXE embeds the PowerShell program in a Windows executable host. No separate project files need to accompany it on the rescue computer.
 

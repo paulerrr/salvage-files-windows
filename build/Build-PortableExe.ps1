@@ -59,8 +59,7 @@ try {
         -Copyright 'Copyright (c) 2026 Rescue Files contributors' `
         -Version $Version `
         -RequireAdmin `
-        -SupportOS `
-        -LongPaths
+        -SupportOS
 
     if (-not (Test-Path -LiteralPath $resolvedOutput -PathType Leaf)) {
         throw 'PS2EXE finished without creating the expected executable.'
