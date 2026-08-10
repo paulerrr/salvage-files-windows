@@ -35,6 +35,14 @@ Describe 'New-RescueCombinedScript' {
     It 'does not introduce destructive robocopy switches' {
         $CombinedContent | Should -Not -Match '(?i)/(MIR|MOVE|MOV|PURGE)\b'
     }
+
+    It 'grants Everyone full control only through the destination setup' {
+        $CombinedContent | Should -Match 'function Grant-RescueDestinationAccess'
+        $CombinedContent | Should -Match "SecurityIdentifier\('S-1-1-0'\)"
+        $CombinedContent | Should -Match `
+            'Grant-RescueDestinationAccess -DestinationPath \$destination'
+        $CombinedContent | Should -Not -Match '(?i)/COPY(?:ALL|:S)\b'
+    }
 }
 
 Describe 'Build-PortableExe.ps1 compatibility' {

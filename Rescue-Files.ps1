@@ -176,6 +176,43 @@ function Get-VolumeAgain {
     Get-Volume -DriveLetter $DriveLetter.TrimEnd(':') -ErrorAction Stop
 }
 
+function Grant-RescueDestinationAccess {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $DestinationPath,
+
+        [Parameter(Mandatory)]
+        [string] $DestinationDriveLetter
+    )
+
+    $fullPath = [IO.Path]::GetFullPath($DestinationPath)
+    $actualRoot = [IO.Path]::GetPathRoot($fullPath).TrimEnd('\')
+    $expectedRoot = '{0}:' -f $DestinationDriveLetter.TrimEnd(':')
+    if ($actualRoot -ne $expectedRoot -or $fullPath -eq ('{0}\' -f $expectedRoot)) {
+        throw 'Windows could not verify the destination folder safely.'
+    }
+
+    if (-not (Test-Path -LiteralPath $fullPath -PathType Container)) {
+        [void](New-Item -ItemType Directory -Path $fullPath)
+    }
+
+    $accessControl = New-Object Security.AccessControl.DirectorySecurity
+    $accessControl.SetAccessRuleProtection($true, $false)
+    $everyone = New-Object Security.Principal.SecurityIdentifier('S-1-1-0')
+    $inheritance = [Security.AccessControl.InheritanceFlags]::ContainerInherit -bor
+        [Security.AccessControl.InheritanceFlags]::ObjectInherit
+    $rule = New-Object Security.AccessControl.FileSystemAccessRule(
+        $everyone,
+        [Security.AccessControl.FileSystemRights]::FullControl,
+        $inheritance,
+        [Security.AccessControl.PropagationFlags]::None,
+        [Security.AccessControl.AccessControlType]::Allow
+    )
+    [void]$accessControl.AddAccessRule($rule)
+    [IO.Directory]::SetAccessControl($fullPath, $accessControl)
+}
+
 Write-Title -Text "RESCUE FILES FROM A COMPUTER THAT WON'T START"
 Write-Host 'This copies personal files from the old drive to a safe place.'
 Write-Host 'It only reads the old drive. It never changes or deletes anything on it.'
@@ -260,7 +297,7 @@ if (Test-RescueSameVolume -SourceVolume $sourceVolume -DestinationVolume $target
 }
 
 $destination = '{0}:\RESCUED - {1}' -f $target.DriveLetter, $source.User
-$logFile = '{0}:\RESCUED - {1} - log.txt' -f $target.DriveLetter, $source.User
+$logFile = Join-Path $destination 'Rescue log.txt'
 
 Write-Title -Text 'STEP 3 OF 4 - Check that there is enough room'
 Write-Host 'Counting the files. This can take a while; please wait...' -ForegroundColor Gray
@@ -333,6 +370,9 @@ Write-Host 'Documents, Downloads, Desktop, Pictures, Music, and Videos are inclu
 Write-Host ''
 Write-Host 'It is safe to run this rescue again.' -ForegroundColor Green
 Write-Host 'Files already copied are skipped, so closing the window will not ruin the rescue.'
+Write-Host ''
+Write-Host 'The rescued folder will have open permissions.' -ForegroundColor Yellow
+Write-Host 'Anyone with the destination drive can view, change, or delete the rescued files.'
 if (-not (Read-YesNo -Prompt "Start copying now?")) {
     Write-Host "`nNothing was copied or changed."
     Wait-BeforeClose
@@ -352,6 +392,17 @@ Write-Title -Text 'STEP 4 OF 4 - Copy the files'
 Write-Host 'A large rescue can take several hours.'
 Write-Host 'If it stops, run this tool again and it will continue by skipping files already copied.'
 Write-Host ''
+
+try {
+    Grant-RescueDestinationAccess -DestinationPath $destination `
+        -DestinationDriveLetter ([string]$target.DriveLetter)
+}
+catch {
+    Write-Host 'Windows could not make the rescued folder openly accessible.' -ForegroundColor Red
+    Write-Host 'No files were copied. Check the destination drive and try again.'
+    Wait-BeforeClose
+    exit
+}
 
 $standbySetting = Get-CurrentStandbySetting
 $started = Get-Date

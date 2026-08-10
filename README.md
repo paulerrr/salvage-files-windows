@@ -37,6 +37,8 @@ Both choices run the same rescue tool and have the same safety checks.
 
 The copy may take hours. The computer is kept awake while it runs, and its previous sleep setting is restored afterward.
 
+The rescued folder is deliberately given open permissions. Anyone who connects or can access the destination drive can view, change, or delete the rescued files. Keep that drive physically secure.
+
 ## If the copy stops
 
 Run **Rescue Files.exe** again and choose the same person and destination. If you are using the source-code folder, run **Rescue Files.bat** again. Files already copied are skipped, so the rescue continues without starting over. Closing the window does not delete or damage files on the old drive.
@@ -60,7 +62,9 @@ The destination must use the NTFS format. To check a drive, right-click it in Fi
 
 ## Understanding the result
 
-An all-successful result is shown in green. The tool also saves a text log beside the rescued folder on the destination drive. Nothing, including the log, is ever written to the old source drive.
+An all-successful result is shown in green. The tool also saves `Rescue log.txt` inside the rescued folder. Nothing, including the log, is ever written to the old source drive.
+
+The inaccessible permissions from the old Windows installation are not copied. The `RESCUED - name` folder and everything created inside it grant Everyone full control, so the files remain easy to open when the destination drive is connected to another Windows computer.
 
 If a few failures are all in one folder, they are often damaged or disposable cache files. Check the files you care about. If failures appear across several folders, the old drive may be failing. Stop using it and seek professional help.
 
