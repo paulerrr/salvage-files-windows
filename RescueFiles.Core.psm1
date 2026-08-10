@@ -19,6 +19,17 @@ function Get-RescueNtfsVolume {
     })
 }
 
+function Get-RescueVolume {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $ExcludeDriveLetter
+    )
+
+    Get-RescueNtfsVolume -Volume @(Get-Volume) `
+        -ExcludeDriveLetter $ExcludeDriveLetter
+}
+
 function Test-RescueExcludedProfile {
     [CmdletBinding()]
     param(
@@ -53,14 +64,14 @@ function Select-RescueProfile {
     param(
         [Parameter(Mandatory)]
         [AllowEmptyCollection()]
-        [object[]] $Profile,
+        [object[]] $CandidateProfile,
 
         [Parameter(Mandatory)]
         [string] $SystemDriveLetter
     )
 
     $systemLetter = $SystemDriveLetter.TrimEnd(':')
-    @($Profile | Where-Object {
+    @($CandidateProfile | Where-Object {
         -not (Test-RescueExcludedProfile -Name $_.User) -and
         -not $_.IsJunction
     } | ForEach-Object {
@@ -162,7 +173,7 @@ function Get-RobocopyErrorGroup {
             $path.TrimEnd('\')
         }
         else {
-            Split-Path -Path $path -Parent
+            $path -replace '\\[^\\]*$', ''
         }
     }
 
@@ -199,6 +210,7 @@ function Test-RescueSameVolume {
 
 Export-ModuleMember -Function @(
     'Get-RescueNtfsVolume',
+    'Get-RescueVolume',
     'Test-RescueExcludedProfile',
     'Test-RescueJunction',
     'Select-RescueProfile',

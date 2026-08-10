@@ -49,6 +49,7 @@ try {
 }
 catch {
     # Some hosts do not allow their title to be changed. The rescue can continue.
+    $null = $_
 }
 
 function Write-Title {
@@ -140,11 +141,14 @@ function Get-CurrentStandbySetting {
     $indexes = @($queryOutput | ForEach-Object {
         if ($_ -match '0x([0-9a-fA-F]{8})\s*$') { $Matches[1] }
     })
-    if ($indexes.Count -lt 1) { return $null }
+    # A setting query can also contain minimum, maximum, and increment values.
+    # The final two hexadecimal values are always the current AC and DC values,
+    # in that order, regardless of the language used by Windows.
+    if ($indexes.Count -lt 2) { return $null }
 
     [PSCustomObject]@{
         Scheme = $scheme
-        Seconds = [Convert]::ToInt64($indexes[0], 16)
+        Seconds = [Convert]::ToInt64($indexes[$indexes.Count - 2], 16)
         SleepSubgroup = $sleepSubgroup
         StandbySetting = $standbySetting
     }
@@ -180,7 +184,7 @@ Write-Title -Text 'STEP 1 OF 4 - Choose the files to rescue'
 Write-Host 'Looking for user folders on every connected Windows drive...' -ForegroundColor Gray
 
 $systemDriveLetter = $env:SystemDrive.TrimEnd(':')
-$volumes = @(Get-RescueNtfsVolume -Volume @(Get-Volume))
+$volumes = @(Get-RescueVolume)
 $foundProfiles = foreach ($volume in $volumes) {
     $usersPath = '{0}:\Users' -f $volume.DriveLetter
     if (-not (Test-Path -LiteralPath $usersPath -PathType Container)) { continue }
@@ -198,7 +202,7 @@ $foundProfiles = foreach ($volume in $volumes) {
     }
 }
 
-$profiles = @(Select-RescueProfile -Profile @($foundProfiles) `
+$profiles = @(Select-RescueProfile -CandidateProfile @($foundProfiles) `
     -SystemDriveLetter $systemDriveLetter)
 if ($profiles.Count -eq 0) {
     Write-Host "`nNo user folders were found." -ForegroundColor Red
@@ -209,14 +213,14 @@ if ($profiles.Count -eq 0) {
 
 Write-Host "`nThese user folders were found:`n"
 for ($index = 0; $index -lt $profiles.Count; $index++) {
-    $profile = $profiles[$index]
-    $warning = if ($profile.IsThisPC) {
+    $candidateProfile = $profiles[$index]
+    $warning = if ($candidateProfile.IsThisPC) {
         " - this computer; probably not the old drive"
     }
     else { '' }
-    $color = if ($profile.IsThisPC) { 'DarkGray' } else { 'White' }
-    Write-Host ('  {0}. {1} ({2}:, {3}){4}' -f ($index + 1), $profile.User,
-        $profile.Drive, $profile.Label, $warning) -ForegroundColor $color
+    $color = if ($candidateProfile.IsThisPC) { 'DarkGray' } else { 'White' }
+    Write-Host ('  {0}. {1} ({2}:, {3}){4}' -f ($index + 1), $candidateProfile.User,
+        $candidateProfile.Drive, $candidateProfile.Label, $warning) -ForegroundColor $color
 }
 
 $source = $profiles[(Read-NumberedChoice `
@@ -224,8 +228,8 @@ $source = $profiles[(Read-NumberedChoice `
 $sourceVolume = Get-VolumeAgain -DriveLetter $source.Drive
 
 Write-Title -Text 'STEP 2 OF 4 - Choose where to save the files'
-$targets = @(Get-RescueNtfsVolume -Volume @(Get-Volume) `
-    -ExcludeDriveLetter $source.Drive | Sort-Object DriveLetter)
+$targets = @(Get-RescueVolume -ExcludeDriveLetter $source.Drive |
+    Sort-Object DriveLetter)
 if ($targets.Count -eq 0) {
     Write-Host 'There is no suitable drive to save the rescued files to.' -ForegroundColor Red
     Write-Host 'Connect another drive formatted as NTFS, then run this tool again.'

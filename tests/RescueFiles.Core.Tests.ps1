@@ -1,4 +1,7 @@
 BeforeAll {
+    if (-not (Get-Command Get-Volume -ErrorAction SilentlyContinue)) {
+        function global:Get-Volume { }
+    }
     Import-Module (Join-Path $PSScriptRoot '..' 'RescueFiles.Core.psm1') -Force
 }
 
@@ -17,6 +20,22 @@ Describe 'Get-RescueNtfsVolume' {
     }
 }
 
+Describe 'Get-RescueVolume' {
+    It 'filters the objects returned by a mocked Get-Volume' {
+        Mock Get-Volume -ModuleName RescueFiles.Core {
+            @(
+                [pscustomobject]@{ DriveLetter = 'E'; FileSystem = 'NTFS' }
+                [pscustomobject]@{ DriveLetter = 'F'; FileSystem = 'ReFS' }
+            )
+        }
+
+        $result = Get-RescueVolume
+
+        $result.DriveLetter | Should -Be 'E'
+        Should -Invoke Get-Volume -ModuleName RescueFiles.Core -Times 1
+    }
+}
+
 Describe 'profile selection' {
     It 'excludes built-in profiles and junctions, and sorts this PC last' {
         $profiles = @(
@@ -26,7 +45,7 @@ Describe 'profile selection' {
             [pscustomobject]@{ Path = 'E:\Users\Legacy'; Drive = 'E'; User = 'Legacy'; Label = 'Old PC'; IsJunction = $true }
         )
 
-        $result = Select-RescueProfile -Profile $profiles -SystemDriveLetter C
+        $result = Select-RescueProfile -CandidateProfile $profiles -SystemDriveLetter C
 
         $result.User | Should -Be @('Alex', 'Jamie')
         $result[1].IsThisPC | Should -BeTrue
