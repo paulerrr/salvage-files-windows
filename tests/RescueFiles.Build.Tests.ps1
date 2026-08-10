@@ -36,3 +36,17 @@ Describe 'New-RescueCombinedScript' {
         $CombinedContent | Should -Not -Match '(?i)/(MIR|MOVE|MOV|PURGE)\b'
     }
 }
+
+Describe 'Build-PortableExe.ps1 compatibility' {
+    BeforeAll {
+        $script:BuilderContent = Get-Content `
+            -LiteralPath (Join-Path $RepositoryRoot 'build' 'Build-PortableExe.ps1') `
+            -Raw
+    }
+
+    It 'does not evaluate PSScriptRoot in a parameter default' {
+        $BuilderContent | Should -Not -Match `
+            '(?s)\[string\]\s+\$OutputPath\s*=.*?\$PSScriptRoot'
+        $BuilderContent | Should -Match '\$MyInvocation\.MyCommand\.Path'
+    }
+}

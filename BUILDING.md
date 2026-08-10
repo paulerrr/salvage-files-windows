@@ -16,8 +16,10 @@ Install-Module ps2exe -RequiredVersion 1.0.18 -Scope CurrentUser
 Then run this command from the repository root:
 
 ```powershell
-.\build\Build-PortableExe.ps1 -Version 1.0.0.0
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\build\Build-PortableExe.ps1" -Version 1.0.0.0
 ```
+
+The one-process execution-policy bypass is needed on Windows computers that block local scripts. It does not permanently change the computer's execution policy.
 
 The result is `dist\Rescue Files.exe`. It is a console executable with an administrator manifest. The build combines the main script and core module in a temporary location, invokes PS2EXE, and removes the temporary combined script afterward.
 

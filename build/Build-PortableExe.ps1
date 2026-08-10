@@ -5,8 +5,8 @@ param(
     [ValidatePattern('^\d+\.\d+\.\d+\.\d+$')]
     [string] $Version = '1.0.0.0',
 
-    [string] $OutputPath = (Join-Path (Split-Path $PSScriptRoot -Parent) `
-        'dist\Rescue Files.exe')
+    [AllowEmptyString()]
+    [string] $OutputPath
 )
 
 Set-StrictMode -Version 2.0
@@ -16,10 +16,18 @@ if ($env:OS -ne 'Windows_NT') {
     throw 'The portable executable must be built on Windows.'
 }
 
-$repositoryRoot = Split-Path $PSScriptRoot -Parent
-$buildModule = Join-Path $PSScriptRoot 'RescueFiles.Build.psm1'
+$scriptPath = $MyInvocation.MyCommand.Path
+if ([string]::IsNullOrWhiteSpace($scriptPath)) {
+    throw 'Windows could not determine the location of the build script.'
+}
+$scriptDirectory = Split-Path -Path $scriptPath -Parent
+$repositoryRoot = Split-Path -Path $scriptDirectory -Parent
+$buildModule = Join-Path $scriptDirectory 'RescueFiles.Build.psm1'
 $mainScript = Join-Path $repositoryRoot 'Rescue-Files.ps1'
 $coreModule = Join-Path $repositoryRoot 'RescueFiles.Core.psm1'
+if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+    $OutputPath = Join-Path $repositoryRoot 'dist\Rescue Files.exe'
+}
 $resolvedOutput = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(
     $OutputPath
 )
