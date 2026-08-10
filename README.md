@@ -12,9 +12,21 @@ You need:
 
 If the old drive makes clicking or grinding sounds, repeatedly disconnects, or disappears from File Explorer, stop. Continuing can make a damaged drive worse. Ask a computer repair or data-recovery professional for help.
 
+## Which file should I use?
+
+Use **Rescue Files.exe** if you have it. It is one portable file: there is nothing to install, and it does not need the other project files beside it.
+
+The executable is created for Windows releases and automated Windows builds; it is not stored directly in the source-code repository. If you downloaded the source-code folder instead, keep these three files together and double-click **Rescue Files.bat**:
+
+- `Rescue Files.bat`
+- `Rescue-Files.ps1`
+- `RescueFiles.Core.psm1`
+
+Both choices run the same rescue tool and have the same safety checks.
+
 ## Copy your files
 
-1. Download **Rescue Files.exe** onto the working Windows computer. It is portable and does not need to be installed. If you received the source-code folder instead, keep its files together and use **Rescue Files.bat**.
+1. Put **Rescue Files.exe**, or the complete source-code folder, on the working Windows computer. Do not put it on the old drive.
 2. Connect the old drive and the drive where you want the rescued files saved.
 3. Double-click **Rescue Files.exe**, or **Rescue Files.bat** when using the source-code folder.
 4. When Windows asks whether to allow changes, choose **Yes**. The tool needs this permission to read files whose old Windows permissions no longer work.
@@ -31,7 +43,7 @@ Run **Rescue Files.exe** again and choose the same person and destination. If yo
 
 ## If Windows shows a safety warning
 
-Only use a copy downloaded from a source you trust. A newly built or unsigned executable may cause Windows to show a protection warning. That warning does not prove the file is harmful, but you should not bypass it unless you know where your copy came from. The source-code version remains available so that the tool can be inspected before it is run.
+Only use a copy obtained from a source you trust. A newly built or unsigned executable may cause Windows to show a protection warning. That warning does not prove the file is harmful, but do not bypass it unless you know exactly where your copy came from. If you are unsure, use the inspectable source-code version or ask someone you trust for help.
 
 Never disconnect either drive while its activity light is flashing. If Windows says a drive is busy, shut down the working computer before unplugging it.
 
@@ -55,6 +67,8 @@ If a few failures are all in one folder, they are often damaged or disposable ca
 ## Safety guarantees
 
 Rescue Files uses Windows Robocopy backup mode to read through permissions left by the old Windows installation. It does not take ownership or rewrite permissions. Its copy command never uses mirror, move, or purge options, and it refuses to use the source volume as the destination.
+
+The executable is only a portable package of the same PowerShell source. It does not contain a different copy engine or change what the tool is allowed to do.
 
 ## License
 
