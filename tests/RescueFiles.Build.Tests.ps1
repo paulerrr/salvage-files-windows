@@ -1,0 +1,38 @@
+BeforeAll {
+    Import-Module (Join-Path $PSScriptRoot '..' 'build' 'RescueFiles.Build.psm1') -Force
+    $script:RepositoryRoot = Split-Path $PSScriptRoot -Parent
+}
+
+Describe 'New-RescueCombinedScript' {
+    BeforeEach {
+        $script:CombinedPath = Join-Path $TestDrive 'Rescue-Files-combined.ps1'
+        New-RescueCombinedScript `
+            -MainScriptPath (Join-Path $RepositoryRoot 'Rescue-Files.ps1') `
+            -CoreModulePath (Join-Path $RepositoryRoot 'RescueFiles.Core.psm1') `
+            -OutputPath $CombinedPath | Out-Null
+        $script:CombinedContent = Get-Content -LiteralPath $CombinedPath -Raw
+    }
+
+    It 'creates a self-contained script with the core functions' {
+        $CombinedContent | Should -Match 'function ConvertFrom-RobocopySummary'
+        $CombinedContent | Should -Match 'function Test-RescueSameVolume'
+        $CombinedContent | Should -Not -Match 'Import-Module.*RescueFiles\.Core'
+        $CombinedContent | Should -Not -Match 'Export-ModuleMember'
+    }
+
+    It 'produces syntactically valid PowerShell' {
+        $tokens = $null
+        $errors = $null
+        [void][Management.Automation.Language.Parser]::ParseFile(
+            $CombinedPath,
+            [ref]$tokens,
+            [ref]$errors
+        )
+
+        $errors | Should -BeNullOrEmpty
+    }
+
+    It 'does not introduce destructive robocopy switches' {
+        $CombinedContent | Should -Not -Match '(?i)/(MIR|MOVE|MOV|PURGE)\b'
+    }
+}
