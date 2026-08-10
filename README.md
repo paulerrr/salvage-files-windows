@@ -14,9 +14,9 @@ If the old drive makes clicking or grinding sounds, repeatedly disconnects, or d
 
 ## Copy your files
 
-1. Download this whole folder onto the working Windows computer. Keep `Rescue Files.bat`, `Rescue-Files.ps1`, and `RescueFiles.Core.psm1` together.
+1. Download **Rescue Files.exe** onto the working Windows computer. It is portable and does not need to be installed. If you received the source-code folder instead, keep its files together and use **Rescue Files.bat**.
 2. Connect the old drive and the drive where you want the rescued files saved.
-3. Double-click **Rescue Files.bat**.
+3. Double-click **Rescue Files.exe**, or **Rescue Files.bat** when using the source-code folder.
 4. When Windows asks whether to allow changes, choose **Yes**. The tool needs this permission to read files whose old Windows permissions no longer work.
 5. Follow the numbered choices on screen. The old drive is usually the one that is not marked as this computer's drive.
 6. Check the source, destination, file count, and space shown before answering **Y** to start.
@@ -27,7 +27,11 @@ The copy may take hours. The computer is kept awake while it runs, and its previ
 
 ## If the copy stops
 
-Run **Rescue Files.bat** again and choose the same person and destination. Files already copied are skipped, so the rescue continues without starting over. Closing the window does not delete or damage files on the old drive.
+Run **Rescue Files.exe** again and choose the same person and destination. If you are using the source-code folder, run **Rescue Files.bat** again. Files already copied are skipped, so the rescue continues without starting over. Closing the window does not delete or damage files on the old drive.
+
+## If Windows shows a safety warning
+
+Only use a copy downloaded from a source you trust. A newly built or unsigned executable may cause Windows to show a protection warning. That warning does not prove the file is harmful, but you should not bypass it unless you know where your copy came from. The source-code version remains available so that the tool can be inspected before it is run.
 
 Never disconnect either drive while its activity light is flashing. If Windows says a drive is busy, shut down the working computer before unplugging it.
 
