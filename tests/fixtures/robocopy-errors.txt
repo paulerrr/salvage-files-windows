@@ -1,0 +1,6 @@
+2026/08/10 10:15:01 ERROR 5 (0x00000005) Copying File E:\Users\Jamie\Pictures\broken-one.jpg
+Access is denied.
+2026/08/10 10:15:02 ERROR 23 (0x00000017) Copying File E:\Users\Jamie\Pictures\broken-two.jpg
+Data error (cyclic redundancy check).
+2026/08/10 10:15:04 ERROR 23 (0x00000017) Copying File E:\Users\Jamie\Documents\Taxes\return.pdf
+Data error (cyclic redundancy check).
